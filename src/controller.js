@@ -116,7 +116,7 @@ class Controller extends EventEmitter {
     let params = { token: bot.bot_access_token };
 
     return client.rtm(params).then(ws => {
-      ws.on('message', msg => this.digest(auth, msg));
+      ws.on('message', msg => this.digest(auth, this.parse(msg)));
       ws.on('open', () => this.emit('connected', this));
       ws.on('close', () => this.emit('disconnected', this));
 
