@@ -28,7 +28,7 @@ class Bot {
       else console.error("Can't send a private message without a response_url");
     }
     else if (channel_id || channel) {
-      if (channel) channel_id = channel.id;
+      if (channel) channel_id = channel.id || channel;
       message.channel = channel_id;
       return this.send(message);
     }
