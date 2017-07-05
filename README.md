@@ -5,7 +5,7 @@
 ```js
 const {PORT, SCOPE, TOKEN, CLIENT_ID, CLIENT_SECRET} = process.env,
       slack = require('express-slack'),
-      express = require('express'),      
+      express = require('express'),
       app = express();
 
 // the path for OAuth, slash commands, and event callbacks
@@ -32,7 +32,7 @@ app.listen(PORT, () => {
 ### Middleware
 ```js
 const slack = require('express-slack'),
-      express = require('express'),      
+      express = require('express'),
       app = express();
 
 app.use('/slack', slack({
@@ -66,6 +66,22 @@ slack.on('googlebot', (payload, bot) => { });
 // handle multiple events
 slack.on('googlebot', '/test', 'slash_command', (payload, bot) => { });
 
+// handle data_source
+slack.on('data_source', (payload, bot) => {
+  bot.data({
+    options: [
+      {
+        text: "Option 1",
+        value: "option1"
+      },
+      {
+        text: "Option 2",
+        value: "option2"
+      }
+    ]
+  });
+});
+
 // wildcard support
 slack.on('*', (payload, bot) => { });
 ```
@@ -77,9 +93,11 @@ Event | Description
 **event** | All Event API callbacks
 **webhook** | All WebHook callbacks
 **interactive_message** | All Interactive message callbacks
+**data_source** | All data source requests
 **[/command]** | Any specific slash command
 **[event type]** | Any [specific event](https://api.slack.com/events) type
 **[trigger word]** | Any trigger from outgoing webhooks
+**[data source]** | Any specific data source request
 
 ### Bot
 Bots are preloaded with the appropriate token and are context aware. So you can reply to messages and send ephemeral updates to a message.
@@ -109,10 +127,11 @@ slack.on('message', (payload, bot) => {
 ```
 Methods | Description
 :---|:---
-[say](src/bot.js#L50) | Send a message
-[reply](src/bot.js#L22) | Send a public reply to the event
-[replyPrivate](src/bot.js#L41) | Send an ephemeral reply to the event
-[send](src/bot.js#L61) | Call any Slack API endpoint
+[say](src/bot.js#53) | Send a message
+[reply](src/bot.js#24) | Send a public reply to the event
+[replyPrivate](src/bot.js#44) | Send an ephemeral reply to the event
+[send](src/bot.js#64) | Call any Slack API endpoint
+[data](src/bot.js#73) | Return data immediately, for example on a `data_source` post
 
 ### Data Store
 A key/value store to maintain team/bot information and store custom setings. The store follows the same interface of a single [BotKit Store](https://github.com/howdyai/botkit#storing-information)
@@ -160,7 +179,7 @@ slack.send('https://hooks.slack.com/services/T0000/B000/XXXX', message);
 let instance = slack.client({
   unfurl_links: true,
   channel: 'C1QD223DS1',
-  token: 'xoxb-12345678900-ABCD1234567890'  
+  token: 'xoxb-12345678900-ABCD1234567890'
 });
 
 let message = {

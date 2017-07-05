@@ -6,11 +6,13 @@ class Bot {
    *
    * @param {object} auth - The team's oauth info
    * @param {object} payload - The message payload to use for context
+   * @param {object} res - The original incoming response object
    */
-  constructor(auth, payload) {
+  constructor(auth, payload, res) {
     this.token = auth.bot ? auth.bot.bot_access_token : auth.access_token;
     this.client = client.create({ token: this.token });
     this.payload = payload;
+    this.res = res;
   }
 
   /**
@@ -61,6 +63,15 @@ class Bot {
    */
   send(...args) {
     return this.client.send(...args);
+  }
+
+  /**
+   * Data Response Message
+   *
+   * @param {object} data - The data to return in the response
+   */
+  data(data) {
+    return this.res.send(data);
   }
 }
 

@@ -95,14 +95,12 @@ class Controller extends EventEmitter {
    * @param {Response} res - The express response object
    */
   message(req, res) {
-    res.send('');
-
     let message = this.parse(req.body);
     let {team_id, team} = message;
     if (team) team_id = typeof(team) === 'string' ? team : team.id;
 
     this.store.get(team_id).then(auth => {
-      this.digest(auth, message);
+      this.digest(auth, message, res);
     });
   }
 
@@ -130,9 +128,18 @@ class Controller extends EventEmitter {
    * @param {object|string} message - The incoming Slack message
    * @return {Message} The parsed message
    */
-  digest(auth, message) {
-    let bot = new Bot(auth, message);
-    let {event_ts, event, command, type, trigger_word, callback_id, team_id} = message;
+  digest(auth, message, res) {
+    let bot = new Bot(auth, message, res);
+    let {event_ts, event, command, type, name, trigger_word, callback_id, team_id, response_url} = message;
+
+
+    // notify message button triggered by callback_id
+    if (callback_id && !response_url) {
+      this.emit('data_source', message, bot);
+      this.emit(name, message, bot);
+      return;
+    }
+    res.send('');
 
     // wildcard
     this.emit('*', message, bot);
@@ -159,7 +166,7 @@ class Controller extends EventEmitter {
     }
 
     // notify message button triggered by callback_id
-    if (callback_id) {
+    if (callback_id && response_url) {
       this.emit('interactive_message', message, bot);
       this.emit(callback_id, message, bot);
     }
