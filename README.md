@@ -5,7 +5,7 @@
 ```js
 const {PORT, SCOPE, TOKEN, CLIENT_ID, CLIENT_SECRET} = process.env,
       slack = require('express-slack'),
-      express = require('express'),      
+      express = require('express'),
       app = express();
 
 // the path for OAuth, slash commands, and event callbacks
@@ -22,6 +22,12 @@ slack.on('/test', (payload, bot) => {
   bot.reply('works!');
 });
 
+// handle all messages and reply with a file
+slack.on('message', (payload, bot) => {
+  // Send a file from the file system (or use a buffer or contents of the file)
+  bot.reply('path/to/file.json!');
+});
+
 app.listen(PORT, () => {
   console.log(`Server started on ${PORT}`);
 });
@@ -32,7 +38,7 @@ app.listen(PORT, () => {
 ### Middleware
 ```js
 const slack = require('express-slack'),
-      express = require('express'),      
+      express = require('express'),
       app = express();
 
 app.use('/slack', slack({
@@ -109,10 +115,11 @@ slack.on('message', (payload, bot) => {
 ```
 Methods | Description
 :---|:---
-[say](src/bot.js#L50) | Send a message
-[reply](src/bot.js#L22) | Send a public reply to the event
-[replyPrivate](src/bot.js#L41) | Send an ephemeral reply to the event
-[send](src/bot.js#L61) | Call any Slack API endpoint
+[say](src/bot.js#L53) | Send a message
+[reply](src/bot.js#L24) | Send a public reply to the event
+[replyPrivate](src/bot.js#L44) | Send an ephemeral reply to the event
+[replyFile](src/bot.js#L73) | Send a file as an reply
+[send](src/bot.js#L64) | Call any Slack API endpoint
 
 ### Data Store
 A key/value store to maintain team/bot information and store custom setings. The store follows the same interface of a single [BotKit Store](https://github.com/howdyai/botkit#storing-information)
@@ -160,7 +167,7 @@ slack.send('https://hooks.slack.com/services/T0000/B000/XXXX', message);
 let instance = slack.client({
   unfurl_links: true,
   channel: 'C1QD223DS1',
-  token: 'xoxb-12345678900-ABCD1234567890'  
+  token: 'xoxb-12345678900-ABCD1234567890'
 });
 
 let message = {
