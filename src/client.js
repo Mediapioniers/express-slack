@@ -1,9 +1,12 @@
 const axios = require('axios'),
       WebSocket = require('ws'),
-      qs = require('querystring');
+      qs = require('querystring'),
+      fs = require('fs'),
+      request = require('request');
 
 const AUTH_PARAMS = ["client_id", "scope", "redirect_uri", "team", "state"],
-      TOKEN_PARAMS = ["client_id", "client_secret", "code", "redirect_uri"];
+      TOKEN_PARAMS = ["client_id", "client_secret", "code", "redirect_uri"],
+      BASE_URL_API = "https://slack.com/api/";
 
 
 class Client {
@@ -12,11 +15,11 @@ class Client {
    *
    * @param {Object} defaults - The default config for the instance
    */
-  constructor(defaults) {    
+  constructor(defaults) {
     this.defaults = defaults || {}; // message defaults
-    
+
     this.api = axios.create({
-      baseURL: 'https://slack.com/api/',
+      baseURL: BASE_URL_API,
       headers: { 'user-agent': 'express-slack' }
     });
   }
@@ -46,7 +49,7 @@ class Client {
     if (typeof args[0] === 'string') endPoint = args.shift();
 
     // use defaults when available
-    let message = Object.assign({}, this.defaults, ...args);  
+    let message = Object.assign({}, this.defaults, ...args);
 
     // call update if ts included
     if (message.ts && endPoint === 'chat.postMessage') endPoint = 'chat.update';
@@ -125,19 +128,42 @@ class Client {
    * @return {Promise} A promise with the api result
    */
   post(endPoint, payload, stringify) {
+    let res = r => {
+      if (r.data.ok && r.data.ok === false) return Promise.reject(r.data);
+      else return Promise.resolve(r.data);
+    }
+
+    if(payload.file) {
+      let {file} = payload;
+      delete payload.file;
+      return new Promise(function(resolve, reject) {
+        var r = request.post(BASE_URL_API + endPoint + '?' + qs.stringify(payload), function (err, res, body) {
+          if(err) {
+            return reject(err);
+          }
+
+          if (body.ok && body.ok === false) return reject(body);
+          else return resolve(body);
+        });
+
+        var form = r.form();
+        form.append('filename', payload.filename);
+        if (Buffer.isBuffer(file)) {
+          form.append('file', file, { filename: payload.filename.toString() });
+        } else {
+          form.append('file', fs.createReadStream(file), { filename: payload.filename.toString() });
+        }
+      });
+    }
+
     if (!/^http/i.test(endPoint) || stringify === true) {
-      
+
       // serialize JSON params
       if (payload.attachments)
         payload.attachments = JSON.stringify(payload.attachments);
 
       // serialize JSON for POST
       payload = qs.stringify(payload);
-    }
-
-    let res = r => {      
-      if (r.data.ok && r.data.ok === false) return Promise.reject(r.data);
-      else return Promise.resolve(r.data);
     }
 
     return this.api.post(endPoint, payload).then(res);

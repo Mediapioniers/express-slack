@@ -22,6 +22,12 @@ slack.on('/test', (payload, bot) => {
   bot.reply('works!');
 });
 
+// handle all messages and reply with a file
+slack.on('message', (payload, bot) => {
+  // Send a file from the file system (or use a buffer or contents of the file)
+  bot.reply('path/to/file.json!');
+});
+
 app.listen(PORT, () => {
   console.log(`Server started on ${PORT}`);
 });
@@ -130,6 +136,7 @@ Methods | Description
 [say](src/bot.js#53) | Send a message
 [reply](src/bot.js#24) | Send a public reply to the event
 [replyPrivate](src/bot.js#44) | Send an ephemeral reply to the event
+[replyFile](src/bot.js#L73) | Send a file as an reply
 [send](src/bot.js#64) | Call any Slack API endpoint
 [data](src/bot.js#73) | Return data immediately, for example on a `data_source` post
 

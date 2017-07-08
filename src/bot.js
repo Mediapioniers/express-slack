@@ -1,4 +1,6 @@
-const client = require('./client');
+const client = require('./client'),
+      fs = require('fs'),
+      path = require('path');
 
 class Bot {
   /**
@@ -63,6 +65,42 @@ class Bot {
    */
   send(...args) {
     return this.client.send(...args);
+  }
+
+  /**
+   * Upload a file as a response to an received message
+   * Send a buffer, the file contents or a filepath
+   *
+   * @param {object} file - The file buffer or filepath to upload
+   */
+  replyFile(file) {
+    let {channel_id, channel} = this.payload;
+
+    if (typeof file === "string") {
+      if (!fs.existsSync(file)) {
+        file = {
+          content: file
+        }
+      } else {
+        file = {
+          file: file
+        }
+      }
+    } else if (file instanceof Buffer) {
+      file = {
+        file: file
+      }
+    }
+
+    if (!file.filename) {
+      file.filename = typeof file.file === "string" ? path.basename(file.file) : (new Date()).getTime()
+    }
+    if (channel) {
+      channel_id = channel.id || channel;
+    }
+    file.channels = channel_id;
+
+    return this.client.send('files.upload', file);
   }
 
   /**
