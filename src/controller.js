@@ -139,7 +139,10 @@ class Controller extends EventEmitter {
       this.emit(name, message, bot);
       return;
     }
-    res.send('');
+
+    if(res) {
+      res.send('');
+    }
 
     // wildcard
     this.emit('*', message, bot);
