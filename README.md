@@ -133,12 +133,12 @@ slack.on('message', (payload, bot) => {
 ```
 Methods | Description
 :---|:---
-[say](src/bot.js#53) | Send a message
-[reply](src/bot.js#24) | Send a public reply to the event
-[replyPrivate](src/bot.js#44) | Send an ephemeral reply to the event
-[replyFile](src/bot.js#L73) | Send a file as an reply
-[send](src/bot.js#64) | Call any Slack API endpoint
-[data](src/bot.js#73) | Return data immediately, for example on a `data_source` post
+[say](src/bot.js#55) | Send a message
+[reply](src/bot.js#26) | Send a public reply to the event
+[replyPrivate](src/bot.js#46) | Send an ephemeral reply to the event
+[replyFile](src/bot.js#L76) | Send a file as an reply
+[send](src/bot.js#66) | Call any Slack API endpoint
+[data](src/bot.js#111) | Return data immediately, for example on a `data_source` post
 
 ### Data Store
 A key/value store to maintain team/bot information and store custom setings. The store follows the same interface of a single [BotKit Store](https://github.com/howdyai/botkit#storing-information)
