@@ -25,6 +25,7 @@ class Bot {
    */
   reply(message, ephemeral) {
     let {response_url, channel_id, channel} = this.payload;
+    if (message instanceof Error) message = { text: message.toString() };
     if (typeof(message) === 'string') message = { text: message };
 
     if (ephemeral) {
