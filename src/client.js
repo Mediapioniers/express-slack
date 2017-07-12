@@ -8,6 +8,11 @@ const AUTH_PARAMS = ["client_id", "scope", "redirect_uri", "team", "state"],
       TOKEN_PARAMS = ["client_id", "client_secret", "code", "redirect_uri"],
       BASE_URL_API = "https://slack.com/api/";
 
+let res = r => {
+  if (r.data.ok && r.data.ok === false) return Promise.reject(r.data);
+  else return Promise.resolve(r.data);
+}
+
 
 class Client {
   /**
@@ -167,6 +172,17 @@ class Client {
     }
 
     return this.api.post(endPoint, payload).then(res);
+  }
+
+  /**
+   * GET data from Slack's API
+   *
+   * @param {string} endPoint - The method name or url
+   * @return {Promise} A promise with the api result
+   */
+  get(endPoint) {
+    var authString = 'Bearer ' + this.defaults.token;
+    return this.api.get(endPoint, { headers: { Authorization: authString } }).then(res);
   }
 }
 

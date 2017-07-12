@@ -112,6 +112,15 @@ class Bot {
   data(data) {
     return this.res.send(data);
   }
+
+  /**
+   * Get an uploaded file from a provided Slack URL
+   *
+   * @param {string} url - The private url to download the file from
+   */
+  getFile(url) {
+    return this.client.get(url);
+  }
 }
 
 module.exports = Bot;
