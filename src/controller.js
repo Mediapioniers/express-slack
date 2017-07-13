@@ -15,6 +15,7 @@ class Controller extends EventEmitter {
 
     this.settings = settings;
     this.store = settings.store;
+    this.ws = {};
 
     // use a file store if a path is passed in
     if (typeof(this.store) === 'string') 
@@ -24,7 +25,7 @@ class Controller extends EventEmitter {
     this.store.all().then(auths => {
       Object.keys(auths).forEach(team_id => {
         let auth = auths[team_id];
-        if (auth.bot) this.connect(auth);
+        if (auth.bot) this.connect(auth).then(ws => { this.ws[team_id] = ws;});
       });
     });
   }
@@ -100,7 +101,7 @@ class Controller extends EventEmitter {
     if (team) team_id = typeof(team) === 'string' ? team : team.id;
 
     this.store.get(team_id).then(auth => {
-      this.digest(auth, message, res);
+      this.digest(auth, message, this.ws[team_id], res);
     });
   }
 
@@ -114,7 +115,7 @@ class Controller extends EventEmitter {
     let params = { token: bot.bot_access_token };
 
     return client.rtm(params).then(ws => {
-      ws.on('message', msg => this.digest(auth, this.parse(msg)));
+      ws.on('message', msg => this.digest(auth, this.ws[team_id], this.parse(msg)));
       ws.on('open', () => this.emit('connected', this));
       ws.on('close', () => this.emit('disconnected', this));
 
@@ -128,8 +129,8 @@ class Controller extends EventEmitter {
    * @param {object|string} message - The incoming Slack message
    * @return {Message} The parsed message
    */
-  digest(auth, message, res) {
-    let bot = new Bot(auth, message, res);
+  digest(auth, message, ws, res) {
+    let bot = new Bot(auth, message, ws, res);
     let {event_ts, event, command, type, name, trigger_word, callback_id, team_id, response_url} = message;
 
 
