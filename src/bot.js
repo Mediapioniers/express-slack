@@ -5,11 +5,13 @@ class Bot {
    * Constructor
    *
    * @param {object} auth - The team's oauth info
+   * @param {object} ws - The websocket connection for the RTM messaging
    * @param {object} payload - The message payload to use for context
    */
-  constructor(auth, payload) {
+  constructor(auth, ws, payload) {
     this.token = auth.bot ? auth.bot.bot_access_token : auth.access_token;
     this.client = client.create({ token: this.token });
+    this.ws = ws;
     this.payload = payload;
   }
 
@@ -61,6 +63,33 @@ class Bot {
    */
   send(...args) {
     return this.client.send(...args);
+  }
+
+  /**
+   * Display that the bot is typing
+   *
+   * @return {Promise} A promise with the RTM result
+   */
+  typing() {
+    let {channel_id, channel} = this.payload;
+
+    if (channel) {
+      channel_id = channel.id || channel;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.ws.send(JSON.stringify({
+        "id": (new Date()).getTime(),
+        "type": "typing",
+        "channel": channel_id
+      }), null, (err, result) => {
+        if(err) {
+          return reject(err);
+        }
+
+        resolve(result);
+      });
+    });
   }
 }
 
